@@ -601,6 +601,26 @@
       <to>garage_merge</to>
       <enabled>Y</enabled>
     </hop>
+    <hop>
+      <from>misc_merge</from>
+      <to>Misc_sort</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>MONGO_pool</from>
+      <to>Merge_pool</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Misc_sort</from>
+      <to>Merge_pool</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Merge_pool</from>
+      <to>If field value is null</to>
+      <enabled>Y</enabled>
+    </hop>
   </order>
   <step>
     <name>Amesd_join_1</name>
@@ -1583,10 +1603,32 @@ ORDER BY pid</sql>
     <socket_timeout/>
     <use_ssl_socket_factory>N</use_ssl_socket_factory>
     <read_preference>primary</read_preference>
-    <output_json>Y</output_json>
+    <output_json>N</output_json>
     <query_is_pipeline>N</query_is_pipeline>
     <allow_disk_use>N</allow_disk_use>
     <execute_for_each_row>N</execute_for_each_row>
+    <mongo_fields>
+      <mongo_field>
+        <field_name>PID</field_name>
+        <field_path>$.PID</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>_id</field_name>
+        <field_path>$._id</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>Pool QC</field_name>
+        <field_path>$.Pool QC</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>Pool Area</field_name>
+        <field_path>$.Pool Area</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+    </mongo_fields>
     <attributes/>
     <cluster_schema/>
     <remotesteps>
@@ -1596,8 +1638,8 @@ ORDER BY pid</sql>
       </output>
     </remotesteps>
     <GUI>
-      <xloc>96</xloc>
-      <yloc>784</yloc>
+      <xloc>1200</xloc>
+      <yloc>1056</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1612,7 +1654,7 @@ ORDER BY pid</sql>
       <method>none</method>
       <schema_name/>
     </partitioning>
-    <join_type>FULL OUTER</join_type>
+    <join_type>LEFT OUTER</join_type>
     <step1>gr_liv_area</step1>
     <step2>CSV_property</step2>
     <keys_1>
@@ -3064,6 +3106,128 @@ ORDER BY pid</sql>
       <draw>Y</draw>
     </GUI>
   </step>
+  <step>
+    <name>Misc_sort</name>
+    <type>SortRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <directory>%%java.io.tmpdir%%</directory>
+    <prefix>out</prefix>
+    <sort_size>1000000</sort_size>
+    <free_memory/>
+    <compress>N</compress>
+    <compress_variable/>
+    <unique_rows>N</unique_rows>
+    <fields>
+      <field>
+        <name>pid</name>
+        <ascending>Y</ascending>
+        <case_sensitive>N</case_sensitive>
+        <collator_enabled>N</collator_enabled>
+        <collator_strength>0</collator_strength>
+        <presorted>N</presorted>
+      </field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>928</xloc>
+      <yloc>944</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Merge_pool</name>
+    <type>MergeJoin</type>
+    <description/>
+    <distribute>N</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <join_type>LEFT OUTER</join_type>
+    <step1>Misc_sort</step1>
+    <step2>MONGO_pool</step2>
+    <keys_1>
+      <key>pid</key>
+    </keys_1>
+    <keys_2>
+      <key>PID</key>
+    </keys_2>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>784</xloc>
+      <yloc>1072</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>If field value is null</name>
+    <type>IfNull</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <replaceAllByValue/>
+    <replaceAllMask/>
+    <selectFields>Y</selectFields>
+    <selectValuesType>N</selectValuesType>
+    <setEmptyStringAll>Y</setEmptyStringAll>
+    <valuetypes>
+      </valuetypes>
+    <fields>
+      <field>
+        <name>Bsmt Qual</name>
+        <value>"NA"</value>
+        <mask/>
+        <set_empty_string>N</set_empty_string>
+      </field>
+      <field>
+        <name>Bsmt Unf SF</name>
+        <value>0</value>
+        <mask/>
+        <set_empty_string>N</set_empty_string>
+      </field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>592</xloc>
+      <yloc>1072</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
   <step_error_handling>
   </step_error_handling>
   <slave-step-copy-partition-distribution>
@@ -3077,8 +3241,8 @@ ORDER BY pid</sql>
         <value>{"tabs":{"list":[{"type":"Table","visualization":{"typeId":"@pentaho/det-visual-flat-table@10.1.0.0-317/pentaho/det/visual/flatTable/Model","model":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number","Gr Liv Area:number","PID_2:number","Lot Frontage:number","Lot Area:number","Street:defaultType","Alley:defaultType","Lot Shape:defaultType","Land Contour:defaultType","Utilities:defaultType","Lot Config:defaultType","Land Slope:defaultType","Neighborhood:defaultType","Condition 1:defaultType","Condition 2:defaultType","Bldg Type:defaultType","House Style:defaultType","Overall Qual:number","Overall Cond:number","Year Built:number","Year Remod/Add:number"]}},"visualModel":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number","Gr Liv Area:number","PID_2:number","Lot Frontage:number","Lot Area:number","Street:defaultType","Alley:defaultType","Lot Shape:defaultType","Land Contour:defaultType","Utilities:defaultType","Lot Config:defaultType","Land Slope:defaultType","Neighborhood:defaultType","Condition 1:defaultType","Condition 2:defaultType","Bldg Type:defaultType","House Style:defaultType","Overall Qual:number","Overall Cond:number","Year Built:number","Year Remod/Add:number"]}},"hasFieldsSelected":true},"id":"LWYF5ZQV0.2ZYJNDB240Q","counter":0,"label":"Table","renamed":false,"modeName":"STREAM","filters":[{"type":"NUMERIC_EQ","value":{"_":"=","p":"pid:number","v":{"_":"number","v":526351010}},"meta":{"fieldMasks":{"filterRegex":[]}},"$fieldSet":["pid:number"],"$param":{"value":526351010},"$isSinglePredicate":true,"$isUnitaryDisjunction":true}],"searchOptions":{"text":"","focus":false,"categoryCollapsed":{},"categoryCollapsedFiltered":{}},"layoutOptions":{"layoutPanelCollapsed":false,"filtersPanelCollapsed":false}}]},"selectedTabId":"LWYF5ZQV0.2ZYJNDB240Q"}</value>
       </attribute>
       <attribute>
-        <key>Merge_PSQL_CSV</key>
-        <value>{"tabs":{"list":[{"type":"Table","visualization":{"typeId":"@pentaho/det-visual-flat-table@10.1.0.0-317/pentaho/det/visual/flatTable/Model","model":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number","Gr Liv Area:number","PID_2:number","Lot Frontage:number","Lot Area:number","Street:defaultType","Alley:defaultType","Lot Shape:defaultType","Land Contour:defaultType","Utilities:defaultType","Lot Config:defaultType","Land Slope:defaultType","Neighborhood:defaultType","Condition 1:defaultType","Condition 2:defaultType","Bldg Type:defaultType","House Style:defaultType","Overall Qual:number","Overall Cond:number","Year Built:number","Year Remod/Add:number"]}},"visualModel":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number","Gr Liv Area:number","PID_2:number","Lot Frontage:number","Lot Area:number","Street:defaultType","Alley:defaultType","Lot Shape:defaultType","Land Contour:defaultType","Utilities:defaultType","Lot Config:defaultType","Land Slope:defaultType","Neighborhood:defaultType","Condition 1:defaultType","Condition 2:defaultType","Bldg Type:defaultType","House Style:defaultType","Overall Qual:number","Overall Cond:number","Year Built:number","Year Remod/Add:number"]}},"hasFieldsSelected":true},"id":"LWYDMWCB0.JIBG91AH4VN","counter":0,"label":"Table","renamed":false,"modeName":"STREAM","filters":[{"type":"NUMERIC_EQ","value":{"_":"=","p":"pid:number","v":{"_":"number","v":526351010}},"meta":{"fieldMasks":{"filterRegex":[]}},"$fieldSet":["pid:number"],"$param":{"value":526351010},"$isSinglePredicate":true,"$isUnitaryDisjunction":true}],"searchOptions":{"text":"","focus":false,"categoryCollapsed":{},"categoryCollapsedFiltered":{}},"layoutOptions":{"layoutPanelCollapsed":false,"filtersPanelCollapsed":false}}]},"selectedTabId":"LWYDMWCB0.JIBG91AH4VN"}</value>
+        <key>Merge_pool</key>
+        <value>{"tabs":{"list":[{"type":"Table","visualization":{"typeId":"@pentaho/det-visual-flat-table@10.1.0.0-317/pentaho/det/visual/flatTable/Model","model":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number","Gr Liv Area:number","PID_2:number","Lot Frontage:number","Lot Area:number","Street:defaultType","Alley:defaultType","Lot Shape:defaultType","Land Contour:defaultType","Utilities:defaultType","Lot Config:defaultType","Land Slope:defaultType","Neighborhood:defaultType","Condition 1:defaultType","Condition 2:defaultType","Bldg Type:defaultType","House Style:defaultType","Overall Qual:number","Overall Cond:number","Year Built:number","Year Remod/Add:number","Bsmt Unf SF:number","Bsmt Cond:defaultType","Bsmt Half Bath:number","BsmtFin Type 1:defaultType","pid_3:number","BsmtFin Type 2:defaultType","Total Bsmt SF:number","Bsmt Exposure:defaultType","Bsmt Full Bath:number","Bsmt Qual:defaultType","BsmtFin SF 2:number","BsmtFin SF 1:number","Garage Cond:defaultType","Garage Type:defaultType","Order:number","Garage Yr Blt:number","Garage Cars:number","Garage Qual:defaultType","pid_4:number","Garage Finish:defaultType","Garage Area:number","pid_5:number","Misc Feature:defaultType","Misc Val:number","PID_6:number","_id:defaultType","Pool QC:defaultType","Pool Area:number"]}},"visualModel":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number","Gr Liv Area:number","PID_2:number","Lot Frontage:number","Lot Area:number","Street:defaultType","Alley:defaultType","Lot Shape:defaultType","Land Contour:defaultType","Utilities:defaultType","Lot Config:defaultType","Land Slope:defaultType","Neighborhood:defaultType","Condition 1:defaultType","Condition 2:defaultType","Bldg Type:defaultType","House Style:defaultType","Overall Qual:number","Overall Cond:number","Year Built:number","Year Remod/Add:number","Bsmt Unf SF:number","Bsmt Cond:defaultType","Bsmt Half Bath:number","BsmtFin Type 1:defaultType","pid_3:number","BsmtFin Type 2:defaultType","Total Bsmt SF:number","Bsmt Exposure:defaultType","Bsmt Full Bath:number","Bsmt Qual:defaultType","BsmtFin SF 2:number","BsmtFin SF 1:number","Garage Cond:defaultType","Garage Type:defaultType","Order:number","Garage Yr Blt:number","Garage Cars:number","Garage Qual:defaultType","pid_4:number","Garage Finish:defaultType","Garage Area:number","pid_5:number","Misc Feature:defaultType","Misc Val:number","PID_6:number","_id:defaultType","Pool QC:defaultType","Pool Area:number"]}},"hasFieldsSelected":true},"id":"LX2ODRRJ0.7O7M4NDV2N","counter":0,"label":"Table","renamed":false,"modeName":"STREAM","filters":[{"type":"NULL","value":{"_":"=","p":"Bsmt Unf SF:number"},"meta":{"fieldMasks":{"filterRegex":[]}},"$fieldSet":["Bsmt Unf SF:number"],"$param":{},"$isSinglePredicate":true,"$isUnitaryDisjunction":true}],"searchOptions":{"text":"","focus":false,"categoryCollapsed":{},"categoryCollapsedFiltered":{}},"layoutOptions":{"layoutPanelCollapsed":false,"filtersPanelCollapsed":false}}]},"selectedTabId":"LX2ODRRJ0.7O7M4NDV2N"}</value>
       </attribute>
       <attribute>
         <key>misc_merge</key>
@@ -3090,7 +3254,7 @@ ORDER BY pid</sql>
       </attribute>
       <attribute>
         <key>gr_liv_area</key>
-        <value>{"tabs":{"list":[{"type":"Table","visualization":{"typeId":"@pentaho/det-visual-flat-table@10.1.0.0-317/pentaho/det/visual/flatTable/Model","model":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number","Gr Liv Area xd:number"]}},"visualModel":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number","Gr Liv Area xd:number"]}},"hasFieldsSelected":true},"id":"LWYDFUAL0.E9NUM0LLJ1S","counter":0,"label":"Table","renamed":false,"modeName":"STREAM","filters":[{"type":"NUMERIC_EQ","value":{"_":"=","p":"pid:number","v":{"_":"number","v":526351010}},"meta":{"fieldMasks":{"filterRegex":[]}},"$fieldSet":["pid:number"],"$param":{"value":526351010},"$isSinglePredicate":true,"$isUnitaryDisjunction":true}],"searchOptions":{"text":"","focus":false,"categoryCollapsed":{},"categoryCollapsedFiltered":{}},"layoutOptions":{"layoutPanelCollapsed":false,"filtersPanelCollapsed":false}}]},"selectedTabId":"LWYDFUAL0.E9NUM0LLJ1S"}</value>
+        <value>{"tabs":{"list":[{"type":"Table","visualization":{"typeId":"@pentaho/det-visual-flat-table@10.1.0.0-317/pentaho/det/visual/flatTable/Model","model":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number"]}},"visualModel":{"columns":{"fields":["Exter Cond:number","Exter Qual:number","Heating QC:number","Kitchen Qual:number","MS Zoning:number","pid:number","Roof Style:defaultType","Roof Matl:defaultType","Exterior 1st:defaultType","Exterior 2nd:defaultType","Mas Vnr Type:defaultType","Mas Vnr Area:number","foundation:defaultType","heating:defaultType","Central Air:defaultType","electrical:defaultType","1st Flr SF:number","2nd Flr SF:number","Low Qual Fin SF:number","Kitchen AbvGr:number","TotRms AbvGrd:number","functional:defaultType","fireplaces:number","Fireplace Qu:defaultType","Paved Drive:defaultType","Wood Deck SF:number","Open Porch SF:number","Enclosed Porch:number","3Ssn Porch:number","Screen Porch:number","fence:defaultType","MS SubClass:number","pid_1:number","description:defaultType","description_1:defaultType","Mo Sold:number","Yr Sold:number","Exter Cond_1:defaultType","Heating QC_1:defaultType","Exter Qual_1:defaultType","Kitchen Qual_1:defaultType","Full Bath:number","Half Bath:number","Bedroom:number"]}},"hasFieldsSelected":true},"id":"LWYDFUAL0.E9NUM0LLJ1S","counter":0,"label":"Table","renamed":false,"modeName":"STREAM","filters":[],"searchOptions":{"text":"","focus":false,"categoryCollapsed":{},"categoryCollapsedFiltered":{}},"layoutOptions":{"layoutPanelCollapsed":false,"filtersPanelCollapsed":false}}]},"selectedTabId":"LWYDFUAL0.E9NUM0LLJ1S","version":"8.2"}</value>
       </attribute>
       <attribute>
         <key>bsmt_merge</key>
