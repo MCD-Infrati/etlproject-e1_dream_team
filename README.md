@@ -227,6 +227,8 @@ Al final de este proceso, las bases de mongo quedaron asÃ­:
 
 ![alt text](Images/image-43.png)
 
+18. Así quedó el pipeline de todo el proceso:
+![alt text](Images/Screenshot.png)
 
 ## Lecciones aprendidas:
 
